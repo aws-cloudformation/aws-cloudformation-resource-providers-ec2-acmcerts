@@ -43,7 +43,10 @@ public class TestUtils {
     }
 
     public static GetAssociatedEnclaveCertificateIamRolesResponse createGetAssociationsResponse() {
-        return GetAssociatedEnclaveCertificateIamRolesResponse.builder().build();
+        return GetAssociatedEnclaveCertificateIamRolesResponse
+                .builder()
+                .associatedRoles(createAssociatedRoles())
+                .build();
     }
 
     public static List<AssociatedRole> createAssociatedRoles() {

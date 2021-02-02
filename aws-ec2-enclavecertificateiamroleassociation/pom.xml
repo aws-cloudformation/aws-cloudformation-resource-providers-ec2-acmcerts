@@ -16,9 +16,27 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <awssdk.version>2.15.19</awssdk.version>
     </properties>
 
+    <!-- https://docs.aws.amazon.com/sdk-for-java/v2/developer-guide/setup-project-maven.html -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${awssdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/ec2 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>ec2</artifactId>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/software.amazon.cloudformation/aws-cloudformation-rpdk-java-plugin -->
         <dependency>
             <groupId>software.amazon.cloudformation</groupId>
@@ -78,12 +96,6 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>3.6.0</version>
             <scope>test</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-ec2 -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-java-sdk-ec2</artifactId>
-            <version>1.11.935</version>
         </dependency>
     </dependencies>
 

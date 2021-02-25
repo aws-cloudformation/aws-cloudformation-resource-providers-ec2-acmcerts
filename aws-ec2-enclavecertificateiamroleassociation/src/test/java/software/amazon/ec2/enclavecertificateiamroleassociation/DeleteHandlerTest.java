@@ -57,6 +57,10 @@ public class DeleteHandlerTest extends AbstractTestBase {
                 .build();
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsResponse());
+
+        when(proxyClient.client()
                 .disassociateEnclaveCertificateIamRole(any(DisassociateEnclaveCertificateIamRoleRequest.class)))
                 .thenReturn(TestUtils.createDisassociateResponse());
 
@@ -71,6 +75,36 @@ public class DeleteHandlerTest extends AbstractTestBase {
         assertThat(response.getResourceModels()).isNull();
         assertThat(response.getMessage()).isNull();
         assertThat(response.getErrorCode()).isNull();
+    }
+
+    @Test
+    public void testDisassociateEnclaveCertIamRoleNotFound() {
+        final ResourceModel model = ResourceModel.builder()
+                .certificateArn(TestUtils.CERTIFICATE_ARN)
+                .roleArn(TestUtils.ROLE_ARN)
+                .build();
+        final ResourceHandlerRequest<ResourceModel> request = ResourceHandlerRequest.<ResourceModel>builder()
+                .desiredResourceState(model)
+                .build();
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
+
+        final ProgressEvent<ResourceModel, CallbackContext> response =
+                handler.handleRequest(proxy, request, new CallbackContext(), proxyClient, logger);
+
+        final String ERROR_MESSAGE = String.format("No association found for " +
+                        "certificate arn %s and" +
+                        " role arn %s",
+                TestUtils.CERTIFICATE_ARN, TestUtils.ROLE_ARN);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
+        assertThat(response.getCallbackDelaySeconds()).isEqualTo(0);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).contains(ERROR_MESSAGE);
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.NotFound);
     }
 
     @Test
@@ -131,6 +165,10 @@ public class DeleteHandlerTest extends AbstractTestBase {
                         ERROR_MESSAGE);
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsResponse());
+
+        when(proxyClient.client()
                 .disassociateEnclaveCertificateIamRole(any(DisassociateEnclaveCertificateIamRoleRequest.class)))
                 .thenThrow(exception);
 
@@ -160,7 +198,7 @@ public class DeleteHandlerTest extends AbstractTestBase {
                         ERROR_MESSAGE);
 
         when(proxyClient.client()
-                .disassociateEnclaveCertificateIamRole(any(DisassociateEnclaveCertificateIamRoleRequest.class)))
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
                 .thenThrow(exception);
 
         final ProgressEvent<ResourceModel, CallbackContext> response =
@@ -188,6 +226,10 @@ public class DeleteHandlerTest extends AbstractTestBase {
                 TestUtils.getException(403,
                         BaseHandlerStd.ERROR_CODE_UNAUTHORIZED_OPERATION,
                         ERROR_MESSAGE);
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsResponse());
 
         when(proxyClient.client()
                 .disassociateEnclaveCertificateIamRole(any(DisassociateEnclaveCertificateIamRoleRequest.class)))
@@ -219,6 +261,10 @@ public class DeleteHandlerTest extends AbstractTestBase {
                         ERROR_MESSAGE);
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsResponse());
+
+        when(proxyClient.client()
                 .disassociateEnclaveCertificateIamRole(any(DisassociateEnclaveCertificateIamRoleRequest.class)))
                 .thenThrow(exception);
 
@@ -245,6 +291,10 @@ public class DeleteHandlerTest extends AbstractTestBase {
         final AwsServiceException exception =
                 TestUtils.getException(500, BaseHandlerStd.ERROR_CODE_SERVICE_UNAVAILABLE,
                         ERROR_MESSAGE);
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsResponse());
 
         when(proxyClient.client()
                 .disassociateEnclaveCertificateIamRole(any(DisassociateEnclaveCertificateIamRoleRequest.class)))

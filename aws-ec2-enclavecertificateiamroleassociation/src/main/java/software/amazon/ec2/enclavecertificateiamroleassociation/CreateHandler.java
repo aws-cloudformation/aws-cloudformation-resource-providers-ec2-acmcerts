@@ -10,6 +10,7 @@ import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
 import software.amazon.cloudformation.proxy.ProgressEvent;
 import software.amazon.cloudformation.proxy.OperationStatus;
+import software.amazon.cloudformation.proxy.HandlerErrorCode;
 
 public class CreateHandler extends BaseHandlerStd {
     @Override
@@ -23,6 +24,19 @@ public class CreateHandler extends BaseHandlerStd {
         try {
             validateNotNull(model.getCertificateArn(), Properties.CertificateArn);
             validateNotNull(model.getRoleArn(), Properties.RoleArn);
+
+            if (Helper.getAssociatedRole(proxyClient, model.getCertificateArn(),
+                    model.getRoleArn()) != null) {
+                    return ProgressEvent.<ResourceModel, CallbackContext>builder()
+                            .resourceModel(model)
+                            .message(String.format("Association already exists for " +
+                                            "certificate arn %s and" +
+                                            " role arn %s",
+                                    model.getCertificateArn(), model.getRoleArn()))
+                            .status(OperationStatus.FAILED)
+                            .errorCode(HandlerErrorCode.AlreadyExists)
+                            .build();
+            }
 
             final AssociateEnclaveCertificateIamRoleRequest associateEnclaveCertificateIamRoleRequest =
                     AssociateEnclaveCertificateIamRoleRequest

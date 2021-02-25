@@ -3,6 +3,7 @@ package software.amazon.ec2.enclavecertificateiamroleassociation;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.AssociateEnclaveCertificateIamRoleRequest;
+import software.amazon.awssdk.services.ec2.model.GetAssociatedEnclaveCertificateIamRolesRequest;
 import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
 import software.amazon.cloudformation.proxy.AmazonWebServicesClientProxy;
@@ -56,6 +57,10 @@ public class CreateHandlerTest extends AbstractTestBase {
                 TestUtils.createAssociationRequest(model);
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
+
+        when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))
                 .thenReturn(TestUtils.createAssociationResponse());
 
@@ -74,6 +79,35 @@ public class CreateHandlerTest extends AbstractTestBase {
         assertThat(returnModel.getCertificateS3BucketName()).isEqualTo(TestUtils.CERTIFICATE_S3_BUCKET_NAME);
         assertThat(returnModel.getCertificateS3ObjectKey()).isEqualTo(TestUtils.CERTIFICATE_S3_OBJECT_KEY);
         assertThat(returnModel.getEncryptionKmsKeyId()).isEqualTo(TestUtils.ENCRYPTION_KMS_KEY_ID);
+    }
+
+    @Test
+    public void testAssociateEnclaveCertIamRoleAssociationAlreadyExists() {
+        final ResourceModel model = ResourceModel.builder()
+                .certificateArn(TestUtils.CERTIFICATE_ARN)
+                .roleArn(TestUtils.ROLE_ARN)
+                .build();
+        final ResourceHandlerRequest<ResourceModel> request =
+                TestUtils.createAssociationRequest(model);
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsResponse());
+
+        final ProgressEvent<ResourceModel, CallbackContext> response =
+                handler.handleRequest(proxy, request, null, proxyClient, logger);
+
+        final String ERROR_MESSAGE = String.format("Association already exists for " +
+                        "certificate arn %s and" +
+                        " role arn %s",
+                TestUtils.CERTIFICATE_ARN, TestUtils.ROLE_ARN);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(OperationStatus.FAILED);
+        assertThat(response.getCallbackDelaySeconds()).isEqualTo(0);
+        assertThat(response.getResourceModels()).isNull();
+        assertThat(response.getMessage()).contains(ERROR_MESSAGE);
+        assertThat(response.getErrorCode()).isEqualTo(HandlerErrorCode.AlreadyExists);
     }
 
     @Test
@@ -132,6 +166,10 @@ public class CreateHandlerTest extends AbstractTestBase {
                         ERROR_MESSAGE);
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
+
+        when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))
                 .thenThrow(exception);
 
@@ -159,6 +197,10 @@ public class CreateHandlerTest extends AbstractTestBase {
         final AwsServiceException exception =
                 TestUtils.getException(400, BaseHandlerStd.ERROR_CODE_ROLE_ARN_MALFORMED,
                         ERROR_MESSAGE);
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
 
         when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))
@@ -191,6 +233,10 @@ public class CreateHandlerTest extends AbstractTestBase {
                         ERROR_MESSAGE);
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
+
+        when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))
                 .thenThrow(exception);
 
@@ -219,6 +265,10 @@ public class CreateHandlerTest extends AbstractTestBase {
                 TestUtils.getException(403,
                         BaseHandlerStd.ERROR_CODE_UNAUTHORIZED_OPERATION,
                         ERROR_MESSAGE);
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
 
         when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))
@@ -250,6 +300,10 @@ public class CreateHandlerTest extends AbstractTestBase {
                         ERROR_MESSAGE);
 
         when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
+
+        when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))
                 .thenThrow(exception);
 
@@ -276,6 +330,10 @@ public class CreateHandlerTest extends AbstractTestBase {
         final AwsServiceException exception =
                 TestUtils.getException(500, BaseHandlerStd.ERROR_CODE_SERVICE_UNAVAILABLE,
                         ERROR_MESSAGE);
+
+        when(proxyClient.client()
+                .getAssociatedEnclaveCertificateIamRoles(any(GetAssociatedEnclaveCertificateIamRolesRequest.class)))
+                .thenReturn(TestUtils.createGetAssociationsEmptyResponse());
 
         when(proxyClient.client()
                 .associateEnclaveCertificateIamRole(any(AssociateEnclaveCertificateIamRoleRequest.class)))

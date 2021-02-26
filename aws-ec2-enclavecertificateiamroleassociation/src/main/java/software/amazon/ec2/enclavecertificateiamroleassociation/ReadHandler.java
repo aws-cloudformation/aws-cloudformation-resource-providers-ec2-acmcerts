@@ -2,8 +2,6 @@ package software.amazon.ec2.enclavecertificateiamroleassociation;
 
 import software.amazon.awssdk.services.ec2.Ec2Client;
 import software.amazon.awssdk.services.ec2.model.AssociatedRole;
-import software.amazon.awssdk.services.ec2.model.GetAssociatedEnclaveCertificateIamRolesRequest;
-import software.amazon.awssdk.services.ec2.model.GetAssociatedEnclaveCertificateIamRolesResponse;
 import software.amazon.cloudformation.proxy.Logger;
 import software.amazon.cloudformation.proxy.ProxyClient;
 import software.amazon.cloudformation.proxy.ResourceHandlerRequest;
@@ -25,17 +23,9 @@ public class ReadHandler extends BaseHandlerStd {
             validateNotNull(model.getCertificateArn(), Properties.CertificateArn);
             validateNotNull(model.getRoleArn(), Properties.RoleArn);
 
-            final GetAssociatedEnclaveCertificateIamRolesRequest associatedEnclaveCertificateIamRolesRequest =
-                    GetAssociatedEnclaveCertificateIamRolesRequest
-                            .builder()
-                            .certificateArn(model.getCertificateArn())
-                            .build();
-            final GetAssociatedEnclaveCertificateIamRolesResponse response =
-                    proxyClient.injectCredentialsAndInvokeV2(associatedEnclaveCertificateIamRolesRequest,
-                            proxyClient.client()::getAssociatedEnclaveCertificateIamRoles);
-
-            for (AssociatedRole associatedRole: response.associatedRoles()) {
-                if (associatedRole.associatedRoleArn().equals(model.getRoleArn())) {
+            AssociatedRole associatedRole = Helper.getAssociatedRole(proxyClient,
+                    model.getCertificateArn(), model.getRoleArn());
+            if (associatedRole != null) {
                     model.setCertificateS3BucketName(associatedRole.certificateS3BucketName());
                     model.setCertificateS3ObjectKey(associatedRole.certificateS3ObjectKey());
                     model.setEncryptionKmsKeyId(associatedRole.encryptionKmsKeyId());
@@ -44,7 +34,6 @@ public class ReadHandler extends BaseHandlerStd {
                             .resourceModel(model)
                             .status(OperationStatus.SUCCESS)
                             .build();
-                }
             }
 
             return ProgressEvent.<ResourceModel, CallbackContext>builder()
